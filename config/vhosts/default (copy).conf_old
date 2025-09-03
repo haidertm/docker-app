@@ -1,0 +1,39 @@
+<VirtualHost *:80>
+    ServerAdmin webmaster@localhost
+    DocumentRoot "/var/www/html/pub"
+    ServerName app.pk
+       
+    #ErrorLog /var/www/app.pk/html/apache-error.log
+    
+#    RewriteEngine on
+#    RewriteCond %{HTTPS} off [OR] 
+#    RewriteCond %{HTTP:X-Forwarded-Proto} !https
+#    RewriteRule ^/(.*) https://%{HTTP_HOST}/$1 [NC,R=301,L]
+    
+	<Directory "/var/www/html/pub/">
+	    Options Indexes FollowSymLinks MultiViews
+            #AllowOverride None
+            AllowOverride All
+            Order allow,deny
+            allow from all
+	    Require all granted
+	</Directory>
+</VirtualHost>
+
+<VirtualHost *:443>
+    ServerName app.pk
+    ServerAdmin haideritx@gmail.com
+    DocumentRoot "/var/www/html/pub"
+	<Directory "/var/www/html/pub/">
+	    Options Indexes FollowSymLinks MultiViews
+            AllowOverride All
+            Order allow,deny
+            allow from all
+	    Require all granted
+	</Directory>
+   ErrorLog ${APACHE_LOG_DIR}/localsite-error.log
+   
+   SSLEngine on
+   SSLCertificateFile /var/www/html/app.pk.pem
+   SSLCertificateKeyFile /var/www/html/app.pk-key.pem
+</VirtualHost>
