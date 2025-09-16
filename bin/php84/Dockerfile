@@ -85,3 +85,35 @@ RUN apt-get install -y -qq libjpeg62-turbo-dev libpng-dev libxml2-dev libxslt-de
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 RUN docker-php-ext-install bcmath gd intl pdo_mysql simplexml soap xsl zip sockets
 RUN docker-php-ext-enable bcmath gd intl pdo_mysql simplexml soap xsl zip sockets
+
+# --- Node/NVM/Yarn setup ------------------------------------------------------
+# NVM + Node (LTS) + Yarn via Corepack
+ARG NODE_VERSION=22.19.0
+ENV NVM_DIR=/usr/local/nvm
+
+# deps you need for NVM/Node downloads
+RUN apt-get update -qq && apt-get install -y -qq curl ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# install NVM, then Node, make it default, and expose Node on PATH for everyone
+RUN mkdir -p "$NVM_DIR" \
+ && curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash \
+ && . "$NVM_DIR/nvm.sh" \
+ && nvm install ${NODE_VERSION} \
+ && nvm alias default ${NODE_VERSION} \
+ && nvm use default
+
+# put Node/Yarn on PATH for all shells/non-login processes
+ENV PATH="${NVM_DIR}/versions/node/v${NODE_VERSION}/bin:${PATH}"
+
+# Yarn (via Corepack). This activates Yarn globally in the image.
+RUN corepack enable && corepack prepare yarn@4.9.4 --activate
+
+
+# (Optional but robust) also prepare as www-data so their home cache is warm too
+USER www-data
+RUN corepack enable \
+ && corepack prepare yarn@4.9.4 --activate \
+ && yarn -v
+USER root
+# -----------------------------------------------------------------------------
